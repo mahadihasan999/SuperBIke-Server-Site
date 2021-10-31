@@ -17,12 +17,12 @@ async function run() {
     try {
         await client.connect()
         const database = client.db('galaxy-travel')
-        const productCollection = database.collection('location')
+        const placeCollection = database.collection('location')
         const orderCollection = database.collection('orders')
         //Get Product API
         app.get('/location', async (req, res) => {
 
-            const cursor = productCollection.find({})
+            const cursor = placeCollection.find({})
             const page = req.query.page;
             const size = parseInt(req.query.size)
             let location;
@@ -39,6 +39,14 @@ async function run() {
                 location
 
             })
+        })
+
+        //add to data in server from UI 
+        app.post('/location', async (req, res) => {
+            const order = req.body;
+            const result = await placeCollection.insertOne(order);
+            console.log(result)
+            res.send(result)
         })
 
         //get orders to manage
@@ -67,25 +75,17 @@ async function run() {
             console.log(req.body)
             const keys = req.body;
             const query = { key: { $in: keys } }
-            const location = await productCollection.find(query).toArray();
+            const location = await placeCollection.find(query).toArray();
             res.json(location);
         })
-        // use PoST to get data by key
-        // app.post('/location/byKeys', async (req, res) => {
-        //     console.log(req.body)
-        //     const updateFood = req.body;
-        //     const query = { key: { $in: updateFood } }
-        //     const location = await productCollection.find(query).toArray();
-        //     res.json(location);
-        // })
-
 
         //add order data
         app.post('/orders', async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
-            // res.send(result)
+            res.send(result)
         })
+
         //update data
         app.put('/orders/:id', async (req, res) => {
             const id = req.params.id;
@@ -95,15 +95,14 @@ async function run() {
             const updateDoc = {
                 $set: {
                     name: updatedUser.name,
-                    country: updatedUser.country,
-                    star: updatedUser.star,
-                    img: updatedUser.img,
-                    cost: updatedUser.cost
+                    email: updatedUser.email,
+                    phone: updatedUser.phone
+
+
                 },
 
             };
-            const result = await userCollection.updateOne(filter, updateDoc, options);
-            console.log('Updateing user', req)
+            const result = await orderCollection.updateOne(filter, updateDoc, options);
             res.send(result)
         })
 
