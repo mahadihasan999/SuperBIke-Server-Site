@@ -94,11 +94,11 @@ async function run() {
             const options = { upsert: true }
             const updateDoc = {
                 $set: {
+                    spotName: updatedUser.spotName,
+                    duration: updatedUser.duration,
                     name: updatedUser.name,
                     email: updatedUser.email,
-                    phone: updatedUser.phone
-
-
+                    phone: updatedUser.phone,
                 },
 
             };
