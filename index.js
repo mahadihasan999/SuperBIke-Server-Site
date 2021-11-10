@@ -16,35 +16,37 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         await client.connect()
-        const database = client.db('galaxy-travel')
-        const placeCollection = database.collection('location')
+        const database = client.db('Front-one')
+        const productCollection = database.collection('products')
         const orderCollection = database.collection('orders')
-        //Get Product API
-        app.get('/location', async (req, res) => {
+        const reviewCollection = database.collection('review')
 
-            const cursor = placeCollection.find({})
+        //Get Product API
+        app.get('/products', async (req, res) => {
+
+            const cursor = productCollection.find({})
             const page = req.query.page;
             const size = parseInt(req.query.size)
-            let location;
+            let products;
             const count = await cursor.count()
             if (page) {
-                location = await cursor.skip(page * size).limit(size).toArray();
+                products = await cursor.skip(page * size).limit(size).toArray();
             }
             else {
-                location = await cursor.toArray();
+                products = await cursor.toArray();
             }
 
             res.send({
                 count,
-                location
+                products
 
             })
         })
 
         //add to data in server from UI 
-        app.post('/location', async (req, res) => {
+        app.post('/products', async (req, res) => {
             const order = req.body;
-            const result = await placeCollection.insertOne(order);
+            const result = await productCollection.insertOne(order);
             console.log(result)
             res.send(result)
         })
@@ -70,19 +72,49 @@ async function run() {
 
             })
         })
+
+        //get review from backEnd to show Review page
+        app.get('/review', async (req, res) => {
+
+            const cursor = reviewCollection.find({})
+            const page = req.query.page;
+            const size = parseInt(req.query.size)
+            let reviews;
+            const count = await cursor.count()
+            if (page) {
+                reviews = await cursor.skip(page * size).limit(size).toArray();
+            }
+            else {
+                reviews = await cursor.toArray();
+            }
+
+            res.send({
+                count,
+                reviews
+
+            })
+        })
+
         // use PoST to get data by key
-        app.post('/location/byKeys', async (req, res) => {
+        app.post('/products/byKeys', async (req, res) => {
             console.log(req.body)
             const keys = req.body;
             const query = { key: { $in: keys } }
-            const location = await placeCollection.find(query).toArray();
-            res.json(location);
+            const products = await productCollection.find(query).toArray();
+            res.json(products);
         })
 
         //add order data
         app.post('/orders', async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
+            res.send(result)
+        })
+
+        //add review data from UI(AddReview)
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
             res.send(result)
         })
 
