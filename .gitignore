@@ -1,8 +1,5 @@
 node_modules
 # dependencies
-.env
 super-bike-adminsdk.json.json
 .env
-.env.example
 .env.local
-.env.staging
